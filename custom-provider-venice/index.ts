@@ -56,6 +56,8 @@ interface ModelData {
 		pricing: {
 			input: { usd: number; diem: number };
 			output: { usd: number; diem: number };
+      cache_input: { usd: number; diem: number };
+      cache_output: { usd: number; diem: number };
 		};
 		traits: string[];
 	};
@@ -89,16 +91,12 @@ async function fetchVeniceModels(apiKey: string): Promise<Model<Api>[]> {
 			const spec = model.model_spec;
 			const pricing = spec.pricing;
 
-			// Calculate cost in cents (pricing is in USD)
-			const inputCost = Math.round(pricing.input.usd * 100);
-			const outputCost = Math.round(pricing.output.usd * 100);
-
 			return {
 				id: model.id,
 				name: spec.name,
 				reasoning: spec.capabilities.supportsReasoning,
 				input: spec.capabilities.supportsVision ? ["text", "image"] : ["text"],
-				cost: { input: inputCost, output: outputCost, cacheRead: 0, cacheWrite: 0 },
+				cost: { input: pricing.input.usd, output: pricing.output.usd, cacheRead: pricing.cache_input?.usd || 0, cacheWrite: pricing.cache_output?.usd || 0 },
 				contextWindow: spec.availableContextTokens,
 				maxTokens: 16384, // Default max tokens for Venice models
 			};
