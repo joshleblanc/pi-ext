@@ -1,0 +1,9 @@
+{
+  "name": "pi-url-browser",
+  "version": "1.0.0",
+  "description": "URL browsing extension for pi - fetch and parse web content",
+  "keywords": ["pi-package"],
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}
