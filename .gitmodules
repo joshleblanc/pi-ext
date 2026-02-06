@@ -1,0 +1,3 @@
+[submodule "minimax"]
+	path = minimax
+	url = git@github.com:joshleblanc/pi-minimax.git
