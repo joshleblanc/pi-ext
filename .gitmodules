@@ -1,3 +1,6 @@
 [submodule "minimax"]
 	path = minimax
 	url = git@github.com:joshleblanc/pi-minimax.git
+[submodule "custom-provider-venice"]
+	path = custom-provider-venice
+	url = https://github.com/joshleblanc/pi-provider-venice.git
