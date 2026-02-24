@@ -14,7 +14,6 @@
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import type { Context } from "@mariozechner/pi-coding-agent";
-import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
 
 interface CodingPlanResponse {
   model_remains: {
