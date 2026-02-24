@@ -51,12 +51,14 @@ export default function (pi: ExtensionAPI) {
       const response = await fetch(
         "https://www.minimax.io/v1/api/openplatform/coding_plan/remains",
         {
-          method: "POST",
+          method: "GET",
+          withCredentials: true,
+          credentials: "include",
           headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
+            Authorization: `${apiKey}`,
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          }
         },
       );
 
@@ -168,8 +170,8 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_start", async (_event, ctx) => {
     const model = ctx.model;
     if (model && model.provider === "minimax") {
-      enabled = false;
-      enableFooter(ctx);
+      //enabled = true;
+      //enableFooter(ctx);
       ctx.ui.notify("MiniMax usage footer enabled", "info");
     }
   });
