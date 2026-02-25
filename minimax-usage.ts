@@ -29,8 +29,10 @@ interface CodingPlanResponse {
 export default function (pi: ExtensionAPI) {
   const CACHE_TTL = 60000; // 1 minute cache
   let interval: number;
+  let enabled = true;
 
   async function fetchCodingPlanUsage(ctx: Context) {
+    if (!enabled) return;
 
     const modelRegistry = ctx.modelRegistry;
 
@@ -38,7 +40,8 @@ export default function (pi: ExtensionAPI) {
       // Get MiniMax API key from model registry
       const apiKey = await modelRegistry.getApiKeyForProvider("minimax");
       if (!apiKey) {
-        return null;
+        disableExtension(ctx);
+        return;
       }
 
       const response = await fetch(
@@ -58,7 +61,8 @@ export default function (pi: ExtensionAPI) {
           `Failed to fetch coding plan with key ${apiKey}:`,
           response.status,
         );
-        return "fail";
+        disableExtension(ctx);
+        return;
       }
 
       const data: CodingPlanResponse = await response.json();
@@ -91,8 +95,17 @@ export default function (pi: ExtensionAPI) {
         ctx.ui.setStatus("coding-plan-percent", statusText)
       }
     } catch (error) {
-      console.error("Failed to fetch coding plan:", error);
+      ctx.ui.notify("Failed to fetch coding plan");
+      disableExtension(ctx);
     }
+  }
+
+  function disableExtension(ctx: Context) {
+    if (!enabled) return;
+    enabled = false;
+    clearInterval(interval);
+    ctx.ui.setStatus("coding-plan-percent", "");
+    console.log("MiniMax usage extension disabled due to fetch failure");
   }
 
   // Helper function to convert milliseconds to human readable string
