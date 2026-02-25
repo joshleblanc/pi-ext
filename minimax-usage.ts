@@ -57,10 +57,7 @@ export default function (pi: ExtensionAPI) {
       );
 
       if (!response.ok) {
-        console.error(
-          `Failed to fetch coding plan with key ${apiKey}:`,
-          response.status,
-        );
+        ctx.ui.notify("Failed to fetch coding plan");
         disableExtension(ctx);
         return;
       }
@@ -145,7 +142,8 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("turn_end", async (_event, ctx) => {
-    if (ctx.model?.provider === "minimax") {
+    const apiKey = await ctx.modelRegistry.getApiKeyForProvider("minimax");
+    if (ctx.model?.provider === "minimax" && apiKey.startsWith("sk-cp")) {
       fetchCodingPlanUsage(ctx);
     }
   })
