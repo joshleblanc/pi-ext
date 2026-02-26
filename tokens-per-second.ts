@@ -13,10 +13,12 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 export default function (pi: ExtensionAPI) {
   let totalOutputTokens = 0;
   let totalStreamingTime = 0;
+  let ttft = 0;
 
   const reset = (ctx) => {
     totalOutputTokens = 0;
     totalStreamingTime = 0;
+    ttft = 0;
     update(ctx);
   }
 
@@ -43,6 +45,12 @@ export default function (pi: ExtensionAPI) {
     reset(ctx);
   });
 
+  pi.on("message_update", async (event, ctx) => {
+    if(ttft === 0) {
+      ttft = new Date().getTime() - event.message.timestamp;
+    }
+  });
+
   pi.on("message_end", async (event, ctx) => {
     const msg = event.message as any;
     const outputTokens = msg.usage?.output || 0;
@@ -50,7 +58,7 @@ export default function (pi: ExtensionAPI) {
     if (!outputTokens) return;
 
     const endTime = new Date().getTime();
-    const elapsed = (endTime - event.message.timestamp) / 1000;
+    const elapsed = (endTime - event.message.timestamp - ttft) / 1000;
 
     if (elapsed > 0 && outputTokens > 0) {
       totalOutputTokens += outputTokens;
