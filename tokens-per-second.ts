@@ -45,8 +45,12 @@ export default function (pi: ExtensionAPI) {
     reset(ctx);
   });
 
+  pi.on("message_start", async (_event, ctx) => {
+    ttft = 0;
+  })
+
   pi.on("message_update", async (event, ctx) => {
-    if(ttft === 0) {
+    if (ttft === 0) {
       ttft = new Date().getTime() - event.message.timestamp;
     }
   });
