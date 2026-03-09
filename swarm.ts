@@ -52,7 +52,7 @@ export default function (pi: ExtensionAPI) {
       if (prefix.startsWith("--")) {
         return [
           { value: "--agents ", label: "--agents N (number of agents, 2-8)" },
-          { value: "--parallel ", label: "--parallel (run agents simultaneously)" },
+          { value: "--parallel", label: "--parallel (run agents simultaneously)" },
         ];
       }
       return null;
@@ -109,15 +109,34 @@ export default function (pi: ExtensionAPI) {
       // Start the swarm orchestration
       await ctx.waitForIdle();
       
+      const toolsDescription = `
+
+=== SWARM TOOLS - YOU MUST USE THESE ===
+Available custom tools:
+1. swarm_spawn_agent(agentRole: "${selectedRoles.map(r => r.name).join('" | "')}", subtask: string, context?: string)
+   - Spawns an agent to work on a subtask. AgentRole must be one of the available roles.
+2. swarm_agent_report(agentName: string, subtask: string, status: "completed" | "working" | "blocked" | "failed", result?: string)
+   - Reports the status of an agent's work
+3. swarm_get_status()
+   - Gets status of all agents (no parameters)
+
+CRITICAL: You MUST use these tools. Do not write code or text responses. Only use the tools above.
+=== END SWARM TOOLS ===
+`;
+      
       const systemPrompt = buildSwarmSystemPrompt(swarmConfig);
-      pi.sendUserMessage(
-        `🐝 SWARM MODE: ${task}\n\n` +
-        `You are the swarm orchestrator. Break this task into ${numAgents} subtasks, ` +
-        `assign each to a specialized agent, and coordinate their work.\n\n` +
-        `Available agents: ${selectedRoles.map(a => `${a.name} (${a.role})`).join("; ")}\n\n` +
-        `${systemPrompt}`,
-        { deliverAs: "followUp" }
-      );
+      
+      // Send a direct prompt that emphasizes tool usage
+      const orchestratorPrompt = `TASK: "${task}"
+
+${toolsDescription}
+
+Delegate all work to agents using swarm_spawn_agent. Start now with:
+swarm_spawn_agent(agentRole: "${selectedRoles[0].name}", subtask: "Research best practices for book tracking websites", context: "Focus on UI/UX patterns and data models")
+
+${systemPrompt}`;
+      
+      pi.sendUserMessage(orchestratorPrompt, { deliverAs: "steer" });
     },
   });
   
