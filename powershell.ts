@@ -49,6 +49,11 @@ function getTempFilePath() {
 }
 
 export default function (pi: ExtensionAPI) {
+	// Only load on Windows to avoid conflicts with bg-process extension on other platforms
+	if (process.platform !== "win32") {
+		return;
+	}
+
 	// Track background processes
 	const bgProcesses = new Map<number, BgProcess>();
 
