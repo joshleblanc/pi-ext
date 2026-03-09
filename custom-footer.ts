@@ -78,12 +78,12 @@ export default function (pi: ExtensionAPI) {
 		const cwdStr = theme.fg("muted", `⌂ ${short}`);
 		ctx.ui.setStatus("cwd", cwdStr);
 
-		// Model with thinking indicator
-		const thinking = pi.getThinkingLevel();
-		const thinkColor = thinking === "high" ? "warning" : thinking === "medium" ? "accent" : thinking === "low" ? "dim" : "muted";
-		const modelId = ctx.model?.id || "no-model";
-		const modelStr = theme.fg(thinkColor, "◆") + " " + theme.fg("accent", modelId);
-		ctx.ui.setStatus("model-info", modelStr);
+		// // Model with thinking indicator
+		// const thinking = pi.getThinkingLevel();
+		// const thinkColor = thinking === "high" ? "warning" : thinking === "medium" ? "accent" : thinking === "low" ? "dim" : "muted";
+		// const modelId = ctx.model?.id || "no-model";
+		// const modelStr = theme.fg(thinkColor, "◆") + " " + theme.fg("accent", modelId);
+		// ctx.ui.setStatus("model-info", modelStr);
 	});
 
 	// Also update on UI render requests for elapsed time
@@ -95,7 +95,7 @@ export default function (pi: ExtensionAPI) {
 				return;
 			}
 			const theme = ctx.ui.theme;
-			const elapsed = theme.fg("dim", `⏱${formatElapsed(Date.now() - sessionStart)}`);
+			const elapsed = theme.fg("dim", `${formatElapsed(Date.now() - sessionStart)}`);
 			ctx.ui.setStatus("elapsed", elapsed);
 		}, 30000);
 

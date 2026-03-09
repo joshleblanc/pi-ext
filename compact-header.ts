@@ -1,57 +1,69 @@
 /**
- * Compact Header Info Extension
- *
- * Shows useful keybinding and session info on startup.
- * Uses setStatus to avoid overriding header.
+ * oh-pi Compact Header — table-style startup info with dynamic column widths
  */
-
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { VERSION } from "@mariozechner/pi-coding-agent";
+import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
 
 export default function (pi: ExtensionAPI) {
-	pi.on("session_start", async (_event, ctx) => {
-		if (!ctx.hasUI) return;
-		const theme = ctx.ui.theme;
+  pi.on("session_start", async (_event, ctx) => {
+    if (!ctx.hasUI) return;
 
-		// Get commands and skills
-		const cmds = pi.getCommands();
-		const prompts = cmds
-			.filter((c) => c.source === "prompt")
-			.map((c) => `/${c.name}`)
-			.join("  ");
-		const skills = cmds.filter((c) => c.source === "skill").map((c) => c.name).join("  ");
+    ctx.ui.setHeader((_tui, theme) => ({
+      render(width: number): string[] {
+        const d = (s: string) => theme.fg("dim", s);
+        const a = (s: string) => theme.fg("accent", s);
 
-		const model = ctx.model ? `${ctx.model.id}` : "no model";
-		const thinking = pi.getThinkingLevel();
-		const provider = ctx.model?.provider ?? "";
+        const cmds = pi.getCommands();
+        const prompts = cmds.filter(c => c.source === "prompt").map(c => `/${c.name}`).join("  ");
+        const skills = cmds.filter(c => c.source === "skill").map(c => c.name).join("  ");
+        const model = ctx.model ? `${ctx.model.id}` : "no model";
+        const thinking = pi.getThinkingLevel();
+        const provider = ctx.model?.provider ?? "";
 
-		// Build key info status
-		const keyInfo =
-			theme.fg("dim", "keys: ") +
-			theme.fg("accent", "^C") + theme.fg("dim", "interrupt ") +
-			theme.fg("accent", "^O") + theme.fg("dim", "expand ") +
-			theme.fg("accent", "^G") + theme.fg("dim", "editor ") +
-			theme.fg("accent", "/") + theme.fg("dim", "cmds");
+        const pad = (s: string, w: number) => s + " ".repeat(Math.max(0, w - visibleWidth(s)));
+        const t = (s: string) => truncateToWidth(s, width);
+        const sep = d(" │ ");
 
-		ctx.ui.setStatus("key-info", keyInfo);
+        // Right two columns are fixed width
+        const rCol = [
+          [d("esc"), a("interrupt"),   d("S-tab"), a("thinking")],
+          [d("^C"),  a("clear/exit"),  d("^O"),    a("expand")],
+          [d("^P"),  a("model"),       d("^G"),    a("editor")],
+          [d("/"),   a("commands"),    d("^V"),    a("paste")],
+          [d("!"),   a("bash"),        d(""),      a("")],
+        ];
+        const k1w = 6, v1w = 13, k2w = 6, v2w = 9;
+        const rightW = k1w + v1w + 3 + k2w + v2w + 3; // 3 for each sep
 
-		// Model info
-		const modelInfo =
-			theme.fg("dim", "v") + theme.fg("accent", `${VERSION}`) +
-			theme.fg("dim", " | ") +
-			theme.fg("accent", model) +
-			theme.fg("dim", ` (${thinking})`) +
-			theme.fg("dim", " | ") +
-			theme.fg("muted", provider);
+        // Left column gets remaining space
+        const leftW = Math.max(20, width - rightW);
+        const lk = 9; // label width
 
-		ctx.ui.setStatus("session-info", modelInfo);
+        const lCol = [
+          [d("version"), a(`v${VERSION}  ${provider}`)],
+          [d("model"),   a(model)],
+          [d("think"),   a(thinking)],
+          [d(""),        d("")],
+          [d(""),        d("")],
+        ];
 
-		// Show prompts and skills if available
-		if (prompts || skills) {
-			const extras: string[] = [];
-			if (prompts) extras.push(theme.fg("dim", "prompts: ") + theme.fg("accent", prompts));
-			if (skills) extras.push(theme.fg("dim", "skills: ") + theme.fg("accent", skills));
-			ctx.ui.setStatus("extras", extras.join(theme.fg("dim", " | ")));
-		}
-	});
+        const lines: string[] = [""];
+        for (let i = 0; i < 5; i++) {
+          const [lk0, lv0] = lCol[i];
+          const [rk0, rv0, rk1, rv1] = rCol[i];
+          const left = truncateToWidth(pad(lk0, lk) + lv0, leftW);
+          const right = pad(rk0, k1w) + pad(rv0, v1w) + sep + pad(rk1, k2w) + rv1;
+          lines.push(t(pad(left, leftW) + sep + right));
+        }
+
+        if (prompts) lines.push(t(`${pad(d("prompts"), lk)}${a(prompts)}`));
+        if (skills) lines.push(t(`${pad(d("skills"), lk)}${a(skills)}`));
+        lines.push(d("─".repeat(width)));
+
+        return lines;
+      },
+      invalidate() {},
+    }));
+  });
 }
