@@ -69,7 +69,7 @@ export default function (pi: ExtensionAPI) {
 		ctx.ui.setStatus("token-stats", tokenStats);
 
 		// Elapsed time
-		const elapsed = theme.fg("dim", `⏱${formatElapsed(Date.now() - sessionStart)}`);
+		const elapsed = theme.fg("dim", `${formatElapsed(Date.now() - sessionStart)}`);
 		ctx.ui.setStatus("elapsed", elapsed);
 
 		// // CWD
