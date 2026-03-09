@@ -26,8 +26,8 @@ export default function (pi: ExtensionAPI) {
     if (!ctx.hasUI) return;
     const theme = ctx.ui.theme;
 
-    ctx.ui.setStatus("tps", theme.fg("dim", "tok/s: ") + theme.fg("accent", `${getAverageTps()} tok/s`));
-    ctx.ui.setStatus("streaming-time", theme.fg("dim", "streaming time: ") + theme.fg("accent", `${totalStreamingTime.toFixed(2)} s`));
+    ctx.ui.setStatus("tps", theme.fg("accent", `${getAverageTps()} tok/s`));
+    ctx.ui.setStatus("streaming-time", theme.fg("accent", `${totalStreamingTime.toFixed(2)}s`));
   }
 
   const getAverageTps = (): string => {
