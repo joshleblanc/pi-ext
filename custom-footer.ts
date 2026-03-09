@@ -72,11 +72,11 @@ export default function (pi: ExtensionAPI) {
 		const elapsed = theme.fg("dim", `⏱${formatElapsed(Date.now() - sessionStart)}`);
 		ctx.ui.setStatus("elapsed", elapsed);
 
-		// CWD
-		const parts = process.cwd().split("/");
-		const short = parts.length > 2 ? parts.slice(-2).join("/") : process.cwd();
-		const cwdStr = theme.fg("muted", `⌂ ${short}`);
-		ctx.ui.setStatus("cwd", cwdStr);
+		// // CWD
+		// const parts = process.cwd().split("/");
+		// const short = parts.length > 2 ? parts.slice(-2).join("/") : process.cwd();
+		// const cwdStr = theme.fg("muted", `${short} |`);
+		// ctx.ui.setStatus("cwd", cwdStr);
 
 		// // Model with thinking indicator
 		// const thinking = pi.getThinkingLevel();
