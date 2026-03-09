@@ -122,15 +122,28 @@ export async function runDrone(
 
   try {
     const { execSync } = await import("node:child_process");
+
+    // Detect platform - use appropriate shell on Windows
+    const isWindows = process.platform === "win32";
+    const shell = isWindows ? "cmd.exe" : "/bin/sh";
+    const shellFlag = isWindows ? "/c" : "-c";
+
     // 优先从 context 代码块提取 bash 命令，fallback 到 description
-    const ctxMatch = task.context?.match(/```(?:bash|sh)?\s*\n?([\s\S]*?)```/);
-    const cmd = ctxMatch?.[1]?.trim() || task.description;
-    // 基本危险命令校验
-    const DANGEROUS = /\brm\s+-rf\s+\/|mkfs\b|dd\s+if=|chmod\s+777\s+\/|>\s*\/dev\/sd/i;
-    if (DANGEROUS.test(cmd)) {
+    const ctxMatch = task.context?.match(/```(?:bash|sh|powershell|cmd)?\s*\n?([\s\S]*?)```/);
+    let cmd = ctxMatch?.[1]?.trim() || task.description;
+
+    // 危险命令校验 - 支持 Unix 和 Windows
+    const DANGEROUS_UNIX = /\brm\s+-rf\s+\/|mkfs\b|dd\s+if=|chmod\s+777\s+\/|>\s*\/dev\/sd/i;
+    const DANGEROUS_WINDOWS = /\bformat\s+[a-z]:|del\s+\/[sq]+\s+\\/i;
+    if (isWindows && DANGEROUS_WINDOWS.test(cmd)) {
       throw new Error(`Drone refused dangerous command: ${cmd.slice(0, 80)}`);
     }
-    const output = execSync(cmd, { cwd, encoding: "utf-8", timeout: 30000, stdio: "pipe" }).trim();
+    if (!isWindows && DANGEROUS_UNIX.test(cmd)) {
+      throw new Error(`Drone refused dangerous command: ${cmd.slice(0, 80)}`);
+    }
+
+    // Execute with appropriate shell
+    const output = execSync(`${shell} ${shellFlag} "${cmd.replace(/"/g, '\\"')}"`, { cwd, encoding: "utf-8", timeout: 30000, stdio: "pipe" }).trim();
 
     ant.status = "done";
     ant.finishedAt = Date.now();

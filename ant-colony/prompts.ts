@@ -10,6 +10,10 @@ Behavior:
 - Report findings as structured intelligence for Worker Ants
 - For each recommended task, include the KEY code snippets (with file:line) the worker will need — this saves workers from re-reading files
 
+Platform: This codebase may run on Windows or Unix. Use appropriate commands:
+- Windows: Use "dir", "type", "Get-ChildItem" for file operations
+- Unix: Use "ls", "cat", "find" for file operations
+
 Output format (MUST follow exactly):
 ## Discoveries
 - What you found, with file:line references
@@ -23,7 +27,7 @@ For each task the colony should do next:
 - priority: <1-5, 1=highest>
 - context: <relevant code snippets that the worker will need, with file:line references>
 
-Use caste "drone" instead of "worker" for simple tasks that can be done with a single bash command (file copy, find-replace, formatting, running tests). Drone description should be the exact bash command to execute.
+Use caste "drone" instead of "worker" for simple tasks that can be done with a single command. Drone description should be the exact shell command to execute (use PowerShell/cmd syntax on Windows, bash syntax on Unix).
 
 ## Warnings
 Any risks, blockers, or conflicts detected.`,
@@ -36,6 +40,10 @@ Behavior:
 - After making changes, verify your work (e.g. run the build, check syntax). If verification fails, fix it yourself or declare a fix sub-task
 - If you discover sub-tasks needed, declare them (do NOT execute them yourself)
 - Minimize file conflicts — only touch files assigned to you
+
+Platform: Use platform-appropriate commands:
+- Windows: PowerShell or cmd.exe syntax (e.g., "dir", "Get-ChildItem", "Select-String")
+- Unix: bash/sh syntax (e.g., "ls", "cat", "grep", "find")
 
 Output format (MUST follow exactly):
 ## Completed

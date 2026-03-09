@@ -24,7 +24,8 @@ function normalizeCaste(v: unknown): AntCaste {
   if (raw.includes("侦察") || raw.includes("scout")) return "scout";
   if (raw.includes("工") || raw.includes("worker")) return "worker";
   if (raw.includes("兵") || raw.includes("review") || raw.includes("soldier")) return "soldier";
-  if (raw.includes("drone") || raw.includes("bash") || raw.includes("shell")) return "drone";
+  // Detect drone for command-line tasks - accepts bash, shell, powershell, cmd, or specific commands
+  if (raw.includes("drone") || raw.includes("bash") || raw.includes("shell") || raw.includes("powershell") || raw.includes("cmd")) return "drone";
   return "worker";
 }
 

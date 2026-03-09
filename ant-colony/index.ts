@@ -297,6 +297,13 @@ export default function antColonyExtension(pi: ExtensionAPI) {
         });
         colony.antStreams.clear();
         throttledRender();
+        
+        // Final reminder - colony is done, no more polling needed
+        pi.sendMessage({
+          customType: "ant-colony-done",
+          content: `[COLONY_SIGNAL:DONE] 🐜 Colony finished. No more status checks needed.`,
+          display: true,
+        }, { triggerTurn: false, deliverAs: "followUp" });
       },
     };
 
@@ -666,7 +673,7 @@ export default function antColonyExtension(pi: ExtensionAPI) {
       launchBackgroundColony(colonyParams);
 
       return {
-        content: [{ type: "text", text: `[COLONY_SIGNAL:LAUNCHED]\n🐜 Colony launched in background.\nGoal: ${params.goal}\n\nThe colony runs autonomously in passive mode. Progress is pushed via [COLONY_SIGNAL:*] follow-up messages. Do not poll bg_colony_status unless the user explicitly asks for a manual snapshot.` }],
+        content: [{ type: "text", text: `[COLONY_SIGNAL:LAUNCHED]\n🐜 Colony launched in background.\nGoal: ${params.goal}\n\n🔔 IMPORTANT: Do NOT poll for status. The colony will send progress updates automatically via [COLONY_SIGNAL:*] messages. Do NOT use bg_colony_status, Start-Sleep loops, or file timestamp checks. Simply wait for the completion message.` }],
       };
     },
 
@@ -742,7 +749,7 @@ export default function antColonyExtension(pi: ExtensionAPI) {
         return {
           content: [{
             type: "text" as const,
-            text: "Passive mode is active. Colony progress is already pushed via [COLONY_SIGNAL:*] follow-up messages. Skipping bg_colony_status polling to avoid blocking the main process. Ask explicitly for a manual snapshot if needed.",
+            text: "⛔ STOP POLLING - This wastes resources. Colony progress is pushed automatically via [COLONY_SIGNAL:*] messages. Do NOT call bg_colony_status again. Just wait for completion message.",
           }],
           isError: true,
         };
